@@ -1,9 +1,13 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"tritontube/internal/web"
 )
 
@@ -58,11 +62,18 @@ func main() {
 	var metadataService web.VideoMetadataService
 	fmt.Println("Creating metadata service of type", metadataServiceType, "with options", metadataServiceOptions)
 	// TODO: Implement metadata service creation logic
+	if metadataServiceType == "sqlite" {
+		metadataService = &web.SQLiteVideoMetadataService{DB: openDB(metadataServiceOptions)}
+
+	}
 
 	// Construct content service
 	var contentService web.VideoContentService
 	fmt.Println("Creating content service of type", contentServiceType, "with options", contentServiceOptions)
 	// TODO: Implement content service creation logic
+	if contentServiceType == "fs" {
+		contentService = &web.FSVideoContentService{Directory: contentServiceOptions}
+	}
 
 	// Start the server
 	server := web.NewServer(metadataService, contentService)
@@ -80,4 +91,31 @@ func main() {
 		fmt.Println("Error starting server:", err)
 		return
 	}
+}
+
+func openDB(filepath string) *sql.DB {
+	// check if exists
+	_, err := os.Stat(filepath)
+	dbExists := !errors.Is(err, os.ErrNotExist)
+
+	// attempt to open
+	db, err := sql.Open("sqlite3", filepath)
+	if err != nil {
+		log.Printf("Failed to open db %v\n", err)
+	}
+
+	// create table with format
+	if !dbExists {
+		createTableCommand := `
+		CREATE TABLE videos (
+			id TEXT PRIMARY KEY,
+			uploaded_at DATETIME NOT NULL
+		);`
+		_, err = db.Exec(createTableCommand)
+		if err != nil {
+			log.Printf("failed to open db %v\n", err)
+		}
+	}
+
+	return db
 }
