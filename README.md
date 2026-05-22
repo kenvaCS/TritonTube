@@ -19,7 +19,6 @@ The system is composed of three services:
 - **Go 1.24** — core language
 - **FFmpeg** — transcodes uploaded `.mp4` files to MPEG-DASH (`.mpd` + `.m4s` segments)
 - **SQLite** (`go-sqlite3`) — video metadata persistence
-- **etcd** — distributed metadata backend (alternative to SQLite)
 - **gRPC + Protocol Buffers** — inter-service communication for storage node management
 - **Consistent hashing** — distributes video content across storage nodes
 - **MPEG-DASH** — adaptive bitrate video streaming in the browser
