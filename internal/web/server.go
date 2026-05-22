@@ -100,7 +100,7 @@ func (s *server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Upload Metadata of file sent (prior to lengthy processing of content)
 	if err := s.metadataService.Create(videoId, time.Now()); err != nil {
-		http.Error(w, "Failed to save video metadata", http.StatusInternalServerError)
+		http.Error(w, "Failed to save video metadata", http.StatusConflict)
 		return
 	}
 
